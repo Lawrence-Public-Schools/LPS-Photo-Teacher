@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://plugin.powerschool.pearson.com"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation='http://plugin.powerschool.pearson.com plugin.xsd'
+        name="LPS Photo for Staff"
+        version="1.0"
+        description="Photo Badge for LPS Staff">
+    <publisher name="John Sandoval">
+        <contact email="John.Sandoval@lawrence.k12.ma.us"/>
+    </publisher>
+</plugin>

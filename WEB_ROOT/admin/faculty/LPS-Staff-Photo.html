@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Conditional title based on admin_pds_uptake_access -->
+    ~[if#detailview.admin_pds_uptake_access]
+    <title>~[text:psx.html.admin_faculty.photo.staff_photo___nbsp,param:~(lastfirst),param:~(teachernumber)]</title>
+    [else#detailview]
+    <title>~[text:psx.html.admin_faculty.photo.teacher_photo___nbsp,param:~(lastfirst),param:~(teachernumber)]</title>
+    [/if#detailview]
+
+    <!-- Common scripts inclusion -->
+    ~[wc:commonscripts]
+    <!-- Link to CSS files for screen and print -->
+    <link href="/images/css/screen.css" rel="stylesheet" media="screen">
+    <link href="/images/css/print.css" rel="stylesheet" media="print">
+    <meta charset="UTF-8">
+    <title>Set Staff Photo</title>
+    <style>
+        .box-round {
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .teacher-photo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .custom-file-upload,
+        #submitButton,
+        #startWebcamButton {
+            background-color: #0066A5;
+            border: 0 none;
+            border-radius: 4px;
+            color: #FFFFFF;
+            cursor: pointer;
+            padding: .4em 0;
+            margin: 5px 0;
+            font-size: 100%;
+            line-height: 1.2em;
+            width: 220px;
+            display: inline-block;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        #submitButton:hover,
+        #startWebcamButton:hover,
+        .custom-file-upload:hover {
+            background-color: #005b8a;
+        }
+
+        #submitButton {
+            display: none;
+        }
+
+        #imagePreview {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+            width: 220px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #imagePreview img {
+            max-width: 80%;
+            max-height: 150px;
+            border: 2px solid #0066A5;
+            padding: 5px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        #webcamContainer {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+        }
+
+        #video {
+            width: 360px;
+            height: 432px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        #captureButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #captureButton:hover {
+            background-color: #0056b3;
+        }
+
+        #captureButton,
+        #cancelButton {
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px #33333322, 0 0 2px #fff;
+            border: 1px solid #005b8a;
+            box-shadow: 0 1px 4px #0001;
+            width: 220px;
+            margin: 0;
+        }
+
+        #startWebcamButton {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #webcamContainer>div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+            gap: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header and breadcrumb navigation -->
+    ~[wc:admin_header_frame_css]
+    <a href="/admin/home.html" target="_top">~[text:psx.html.admin_faculty.photo.start_page]</a> &gt;
+    <a href="/admin/faculty/search.html" target="_top">~[text:psx.html.admin_faculty.photo.staff]</a> &gt;
+    <a href="/admin/faculty/home.html?selectteacher=nosearch"
+        target="_top">~[text:psx.html.admin_faculty.photo.select_a_staff_member]</a> &gt;
+    Set Photo for ~(lastfirst) (<span class="teachernumber">~(teachernumber)</span>)
+
+    ~[wc:admin_navigation_frame_css]
+    <div class="box-round">
+        <div class="teacher-photo">
+            <div style="text-align:center; font-size:1.2em; font-weight:bold; margin-bottom:10px;">Photo for
+                ~(lastfirst)</div>
+            <div style="text-align:center; margin-bottom:8px;">
+                <span style="font-size:1em; color:#555;">Teacher Number: <strong>~(teachernumber)</strong></span>
+            </div>
+            <!-- Display teacher photo -->
+            <table border="0" cellspacing="0" cellpadding="4">
+                <tr>
+                    <td align="center" class="teacher-photo-img">~(teacherphoto)</td>
+                </tr>
+            </table>
+            <!-- Image preview section -->
+            <div id="imagePreview">
+                <img id="previewImg" src="#" alt="Image Preview">
+                <div class="button-row">
+                    <button type="button" id="rotatePreviewBtn" class="custom-file-upload">Rotate</button>
+                </div>
+                <p><i>Preview of new picture</i></p>
+            </div>
+            <div class="photo-options-container" style="text-align: center; margin-top: 20px;">
+                <!-- Choose a file -->
+                <form id="uploadForm" action="LPS-Staff-Photo.html?frn=~(frn)" method="POST"
+                    enctype="multipart/form-data" style="margin: 0;">
+                    <label for="fileInput" class="custom-file-upload" id="chooseFileLabel">Choose a file</label>
+                    <input type="file" name="filename" accept="image/*" id="fileInput">
+                    <div class="button-row">
+                        <input type="hidden" name="ac" value="submitteacherphoto">
+                        <input type="hidden" name="frn" value="~(frn)">
+                        <input type="hidden" name="curtchrid" value="~(curtchrid)">
+                        <button type="submit" id="submitButton" class="custom-file-upload">Confirm upload</button>
+                    </div>
+                </form>
+                <!-- Take a new picture -->
+                <button id="startWebcamButton" class="custom-file-upload">Take a New Picture</button>
+            </div>
+            <!-- Webcam video stream -->
+            <div id="webcamContainer" style="display: none;">
+                <video id="video" autoplay></video>
+                <canvas id="videoCanvas" width="360" height="432" style="display: none;"></canvas>
+                <div>
+                    <button id="captureButton" class="custom-file-upload">Capture Picture</button>
+                    <button id="cancelButton" class="custom-file-upload"
+                        style="background-color: #F03F35;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    ~[wc:admin_footer_frame_css]
+    <script>
+        // Detect if the browser is Safari/iOS
+        function isSafariOrIOS() {
+            return /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent);
+        }
+        // ============================
+        // VARIABLE INITIALIZATION
+        // ============================
+        const startWebcamButton = document.getElementById('startWebcamButton');
+        const webcamContainer = document.getElementById('webcamContainer');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('videoCanvas');
+        const captureButton = document.getElementById('captureButton');
+        const previewImg = document.getElementById('previewImg');
+        const fileInput = document.getElementById('fileInput');
+        const submitButton = document.getElementById('submitButton');
+        const chooseFileLabel = document.getElementById('chooseFileLabel');
+        const imagePreview = document.getElementById('imagePreview');
+        const cancelButton = document.getElementById('cancelButton');
+        let stream;
+        let capturedImageData = null;
+        // ============================
+        // UTILITY FUNCTIONS
+        // ============================
+        function dataURLToBlob(dataURL) {
+            const parts = dataURL.split(',');
+            const mime = parts[0].match(/:(.*?);/)[1];
+            const binary = atob(parts[1]);
+            const array = [];
+            for (let i = 0; i < binary.length; i++) {
+                array.push(binary.charCodeAt(i));
+            }
+            return new Blob([new Uint8Array(array)], { type: mime });
+        }
+        // ============================
+        // EVENT LISTENERS
+        // ============================
+        // File input change event
+        fileInput.addEventListener('change', function () {
+            if (this.files.length > 0) {
+                submitButton.style.display = 'inline-block';
+                chooseFileLabel.style.display = 'none';
+                imagePreview.style.display = 'block';
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                }
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                submitButton.style.display = 'none';
+                chooseFileLabel.style.display = 'inline-block';
+                imagePreview.style.display = 'none';
+                previewImg.src = '#';
+            }
+        });
+        // Show the webcam popup
+        startWebcamButton.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((mediaStream) => {
+                    stream = mediaStream;
+                    if (isSafariOrIOS()) {
+                        const context = canvas.getContext('2d');
+                        canvas.style.display = 'block';
+                        video.style.display = 'none';
+                        const updateCanvas = () => {
+                            if (stream) {
+                                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                requestAnimationFrame(updateCanvas);
+                            }
+                        };
+                        video.srcObject = stream;
+                        video.play();
+                        updateCanvas();
+                    } else {
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        canvas.style.display = 'none';
+                    }
+                    webcamContainer.style.display = 'block';
+                    startWebcamButton.style.display = 'none';
+                    imagePreview.style.display = 'none';
+                })
+                .catch((error) => console.error('Error accessing webcam:', error));
+        });
+        // Capture image when "Capture Picture" button is clicked
+        captureButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = 360;
+            canvas.height = 432;
+            if (isSafariOrIOS()) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                capturedImageData = canvas.toDataURL('image/jpeg');
+            } else {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                capturedImageData = canvas.toDataURL('image/jpeg');
+            }
+            if (stream) {
+                stream.getTracks().forEach((track) => track.stop());
+            }
+            previewImg.src = capturedImageData;
+            webcamContainer.style.display = 'none';
+            startWebcamButton.style.display = 'block';
+            submitButton.style.display = 'inline-block';
+            chooseFileLabel.style.display = 'none';
+            imagePreview.style.display = 'block';
+        });
+        // Cancel webcam when "Cancel" button is clicked
+        cancelButton.addEventListener('click', () => {
+            if (stream) {
+                stream.getTracks().forEach((track) => track.stop());
+            }
+            webcamContainer.style.display = 'none';
+            startWebcamButton.style.display = 'block';
+        });
+        // Handle "Confirm Upload" button click
+        submitButton.addEventListener('click', function (event) {
+            if (fileInput.files && fileInput.files.length > 0) {
+                event.preventDefault();
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new window.Image();
+                    img.onload = function () {
+                        let canvas = document.createElement('canvas');
+                        let ctx = canvas.getContext('2d');
+                        if (rotation % 180 === 0) {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                        } else {
+                            canvas.width = img.height;
+                            canvas.height = img.width;
+                        }
+                        ctx.save();
+                        ctx.translate(canvas.width / 2, canvas.height / 2);
+                        ctx.rotate((rotation * Math.PI) / 180);
+                        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                        ctx.restore();
+                        canvas.toBlob(function (blob) {
+                            const formData = new FormData();
+                            formData.append('ac', 'submitteacherphoto');
+                            formData.append('frn', '~(frn)');
+                            formData.append('curtchrid', '~(curtchrid)');
+                            formData.append('filename', blob, file.name);
+                            fetch('LPS-Staff-Photo.html?frn=~(frn)', {
+                                method: 'POST',
+                                body: formData,
+                            })
+                                .then((response) => {
+                                    if (response.ok) {
+                                        location.reload();
+                                    } else {
+                                        alert('Failed to upload the picture.');
+                                    }
+                                })
+                                .catch((error) => console.error('Error uploading picture:', error));
+                        }, file.type || 'image/jpeg');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else if (capturedImageData) {
+                event.preventDefault();
+                const img = new window.Image();
+                img.onload = function () {
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d');
+                    if (rotation % 180 === 0) {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    } else {
+                        canvas.width = img.height;
+                        canvas.height = img.width;
+                    }
+                    ctx.save();
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate((rotation * Math.PI) / 180);
+                    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                    ctx.restore();
+                    canvas.toBlob(function (blob) {
+                        const formData = new FormData();
+                        formData.append('ac', 'submitteacherphoto');
+                        formData.append('frn', '~(frn)');
+                        formData.append('curtchrid', '~(curtchrid)');
+                        formData.append('filename', blob, 'captured-image.jpg');
+                        fetch('LPS-Staff-Photo.html?frn=~(frn)', {
+                            method: 'POST',
+                            body: formData,
+                        })
+                            .then((response) => {
+                                if (response.ok) {
+                                    location.reload();
+                                } else {
+                                    alert('Failed to upload the picture.');
+                                }
+                            })
+                            .catch((error) => console.error('Error uploading picture:', error));
+                    }, 'image/jpeg');
+                };
+                img.src = capturedImageData;
+            }
+        });
+        // ============================
+        // IMAGE PREVIEW ROTATION
+        // ============================
+        let rotation = 0;
+        const rotatePreviewBtn = document.getElementById('rotatePreviewBtn');
+        if (rotatePreviewBtn && previewImg) {
+            rotatePreviewBtn.addEventListener('click', function () {
+                rotation = (rotation + 90) % 360;
+                previewImg.style.transform = `rotate(${rotation}deg)`;
+            });
+        }
+        function resetPreviewRotation() {
+            rotation = 0;
+            if (previewImg) previewImg.style.transform = 'rotate(0deg)';
+        }
+        if (fileInput) {
+            fileInput.addEventListener('change', resetPreviewRotation);
+        }
+        if (captureButton) {
+            captureButton.addEventListener('click', resetPreviewRotation);
+        }
+    </script>
+</body>
+
+</html>

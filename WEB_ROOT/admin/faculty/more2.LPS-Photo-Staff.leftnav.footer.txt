@@ -1,0 +1,8 @@
+<script type="text/javascript">
+$j(document).ready(function() {
+$j("ul#tchr_information > li > a[href^='printformletter.html?frn=']").parent().after($j('<li><a href="LPS-Staff-Photo.html?frn=~(frn)">Set Photo</a></li>'));
+$j("ul#tchr_information > li > a").filter(function() {
+return $j(this).text().trim() === "Photo";
+}).parent().hide();
+});
+</script>
