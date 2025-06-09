@@ -334,13 +334,24 @@
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then((mediaStream) => {
                     stream = mediaStream;
+                    currentFacingMode = 'user'; // Default to user-facing camera for mirroring logic
                     if (isSafariOrIOS()) {
                         const context = canvas.getContext('2d');
                         canvas.style.display = 'block';
                         video.style.display = 'none';
                         const updateCanvas = () => {
                             if (stream) {
-                                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                // Mirror for user-facing camera on mobile
+                                if (currentFacingMode === 'user' && isMobileDevice()) {
+                                    context.save();
+                                    context.translate(canvas.width, 0);
+                                    context.scale(-1, 1);
+                                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                    context.restore();
+                                } else {
+                                    context.clearRect(0, 0, canvas.width, canvas.height);
+                                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                }
                                 requestAnimationFrame(updateCanvas);
                             }
                         };
@@ -363,7 +374,16 @@
             const context = canvas.getContext('2d');
             canvas.width = 360;
             canvas.height = 432;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Mirror the captured image if using user-facing camera on mobile
+            if (currentFacingMode === 'user' && isMobileDevice()) {
+                context.save();
+                context.translate(canvas.width, 0);
+                context.scale(-1, 1);
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                context.restore();
+            } else {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
             capturedImageData = canvas.toDataURL('image/jpeg');
             if (stream) {
                 stream.getTracks().forEach((track) => track.stop());
@@ -497,12 +517,37 @@
                     stream.getTracks().forEach((track) => track.stop());
                 }
                 currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-                startCamera(currentFacingMode)
+                const facingModeConstraint = { video: { facingMode: { ideal: currentFacingMode } } };
+                navigator.mediaDevices.getUserMedia(facingModeConstraint)
                     .then((mediaStream) => {
                         stream = mediaStream;
-                        video.srcObject = stream;
-                        video.style.display = 'block';
-                        canvas.style.display = 'none';
+                        if (isSafariOrIOS()) {
+                            const context = canvas.getContext('2d');
+                            canvas.style.display = 'block';
+                            video.style.display = 'none';
+                            const updateCanvas = () => {
+                                if (stream) {
+                                    if (currentFacingMode === 'user' && isMobileDevice()) {
+                                        context.save();
+                                        context.translate(canvas.width, 0);
+                                        context.scale(-1, 1);
+                                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                        context.restore();
+                                    } else {
+                                        context.clearRect(0, 0, canvas.width, canvas.height);
+                                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                    }
+                                    requestAnimationFrame(updateCanvas);
+                                }
+                            };
+                            video.srcObject = stream;
+                            video.play();
+                            updateCanvas();
+                        } else {
+                            video.srcObject = stream;
+                            video.style.display = 'block';
+                            canvas.style.display = 'none';
+                        }
                     })
                     .catch((error) => console.error('Error flipping camera:', error));
             });
