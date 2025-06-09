@@ -142,12 +142,48 @@
             margin-right: auto;
         }
 
+        #flipCameraButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #111111;
+            color: white;
+            border: 1px solid #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px #33333322, 0 0 2px #fff;
+            box-shadow: 0 1px 4px #0001;
+            width: 220px;
+            margin: 0 0 8px 0;
+            display: block;
+        }
+
+        #flipCameraButton:hover {
+            background-color: #222;
+        }
+
         #webcamContainer>div {
             display: flex;
             flex-direction: column;
             align-items: center;
             margin-top: 10px;
             gap: 8px;
+        }
+
+        @media (max-width: 400px) {
+            #video {
+                width: 100%;
+                height: auto;
+            }
+
+            #captureButton,
+            #cancelButton {
+                width: 100%;
+            }
+
+            #flipCameraButton {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -204,9 +240,9 @@
                 <video id="video" autoplay></video>
                 <canvas id="videoCanvas" width="360" height="432" style="display: none;"></canvas>
                 <div>
+                    <button id="flipCameraButton" class="custom-file-upload" style="display:none; margin-bottom:8px;">Flip Camera</button>
                     <button id="captureButton" class="custom-file-upload">Capture Picture</button>
-                    <button id="cancelButton" class="custom-file-upload"
-                        style="background-color: #F03F35;">Cancel</button>
+                    <button id="cancelButton" class="custom-file-upload" style="background-color: #F03F35;">Cancel</button>
                 </div>
             </div>
         </div>
@@ -233,6 +269,32 @@
         const cancelButton = document.getElementById('cancelButton');
         let stream;
         let capturedImageData = null;
+        let currentFacingMode = 'user';
+
+        function isMobileDevice() {
+            return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        }
+
+        const flipCameraButton = document.getElementById('flipCameraButton');
+        if (isMobileDevice()) {
+            flipCameraButton.style.display = 'block';
+        }
+
+        function startCamera(facingMode = 'user') {
+            const constraints = {
+                video: {
+                    facingMode: { ideal: facingMode },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            };
+            return navigator.mediaDevices.getUserMedia(constraints)
+                .catch(() => {
+                    // fallback if ideal fails
+                    return navigator.mediaDevices.getUserMedia({ video: true });
+                });
+        }
+
         // ============================
         // UTILITY FUNCTIONS
         // ============================
@@ -301,13 +363,8 @@
             const context = canvas.getContext('2d');
             canvas.width = 360;
             canvas.height = 432;
-            if (isSafariOrIOS()) {
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                capturedImageData = canvas.toDataURL('image/jpeg');
-            } else {
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                capturedImageData = canvas.toDataURL('image/jpeg');
-            }
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            capturedImageData = canvas.toDataURL('image/jpeg');
             if (stream) {
                 stream.getTracks().forEach((track) => track.stop());
             }
@@ -433,6 +490,22 @@
         }
         if (captureButton) {
             captureButton.addEventListener('click', resetPreviewRotation);
+        }
+        if (flipCameraButton) {
+            flipCameraButton.addEventListener('click', () => {
+                if (stream) {
+                    stream.getTracks().forEach((track) => track.stop());
+                }
+                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+                startCamera(currentFacingMode)
+                    .then((mediaStream) => {
+                        stream = mediaStream;
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        canvas.style.display = 'none';
+                    })
+                    .catch((error) => console.error('Error flipping camera:', error));
+            });
         }
     </script>
 </body>
