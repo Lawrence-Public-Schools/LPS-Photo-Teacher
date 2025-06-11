@@ -51,19 +51,22 @@ if (isMobileDevice()) {
 // File input: preview and show confirm button
 fileInput.addEventListener('change', function () {
     if (this.files.length > 0) {
-        submitButton.style.display = 'inline-block'; // Show the confirm upload button, hide the choose file label, show the image preview section
-        chooseFileLabel.style.display = 'none';
+        submitButton.style.display = 'inline-block'; // Show the confirm upload button
+        // Do NOT hide the choose file label, allow user to pick a different file
+        chooseFileLabel.style.display = 'inline-block';
         imagePreview.style.display = 'block';
         const reader = new FileReader(); // Create a FileReader to read the file
         reader.onload = function (e) {
             previewImg.src = e.target.result; // Set preview image source to the selected file
+            capturedImageData = null; // Clear webcam image if a file is chosen
         }
         reader.readAsDataURL(this.files[0]); // Read the file as a data URL
     } else { // If no file is selected
-        submitButton.style.display = 'none'; // Hide the confirm upload button, show choose file label, hide image preview section
+        submitButton.style.display = 'none'; // Hide the confirm upload button
         chooseFileLabel.style.display = 'inline-block';
         imagePreview.style.display = 'none';
         previewImg.src = '#'; // Reset the preview image source
+        capturedImageData = null;
     }
 });
 
@@ -125,11 +128,11 @@ captureButton.addEventListener('click', () => {
     if (stream) {
         stream.getTracks().forEach((track) => track.stop()); // Stop webcam stream
     }
-    previewImg.src = capturedImageData; // Show captured image in preview, hide webcam popup, show "Take a New Picture" button, hide choose file label, and show image preview section
+    previewImg.src = capturedImageData; // Show captured image in preview
     webcamContainer.style.display = 'none';
     startWebcamButton.style.display = 'block';
     submitButton.style.display = 'inline-block';
-    chooseFileLabel.style.display = 'none';
+    chooseFileLabel.style.display = 'inline-block'; // Allow user to pick a different file after taking a picture
     imagePreview.style.display = 'block';
 });
 
