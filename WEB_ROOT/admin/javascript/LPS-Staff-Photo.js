@@ -120,7 +120,7 @@ startWebcamButton.addEventListener('click', () => {
                 const updateCanvas = () => {
                     if (stream) {
                         context.clearRect(0, 0, canvas.width, canvas.height);
-                        if (currentFacingMode === 'user' && isMobileDevice()) {
+                        if (currentFacingMode === 'user') {
                             context.save();
                             context.translate(canvas.width, 0);
                             context.scale(-1, 1);
@@ -139,6 +139,12 @@ startWebcamButton.addEventListener('click', () => {
                 video.srcObject = stream;
                 video.style.display = 'block';
                 canvas.style.display = 'none';
+                // Mirror the video element for user-facing camera (desktop)
+                if (currentFacingMode === 'user') {
+                    video.style.transform = 'scaleX(-1)';
+                } else {
+                    video.style.transform = '';
+                }
             }
             webcamContainer.style.display = 'block';
             startWebcamButton.style.display = 'none';
@@ -154,7 +160,7 @@ captureButton.addEventListener('click', () => {
     canvas.height = 432;
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
-    if (currentFacingMode === 'user' && isMobileDevice()) {
+    if (currentFacingMode === 'user') {
         context.save();
         context.translate(canvas.width, 0);
         context.scale(-1, 1); // Flip horizontally for user-facing camera
@@ -205,7 +211,7 @@ if (flipCameraButton) {
                         const updateCanvas = () => {
                             if (stream) {
                                 context.clearRect(0, 0, canvas.width, canvas.height);
-                                if (currentFacingMode === 'user' && isMobileDevice()) {
+                                if (currentFacingMode === 'user') {
                                     context.save();
                                     context.translate(canvas.width, 0);
                                     context.scale(-1, 1); // Flip horizontally for user-facing camera
@@ -224,6 +230,12 @@ if (flipCameraButton) {
                         video.srcObject = stream; // Set video source to the new stream
                         video.style.display = 'block';
                         canvas.style.display = 'none';
+                        // Mirror the video element for user-facing camera (desktop)
+                        if (currentFacingMode === 'user') {
+                            video.style.transform = 'scaleX(-1)';
+                        } else {
+                            video.style.transform = '';
+                        }
                     }
                 })
                 .catch((error) => console.error('Error flipping camera:', error));
