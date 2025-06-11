@@ -58,8 +58,9 @@
             <div class="photo-options-container" style="text-align: center; margin-top: 20px;">
                 <form id="uploadForm" action="LPS-Staff-Photo.html?frn=~(frn)" method="POST"
                     enctype="multipart/form-data" style="margin: 0;">
-                    <div class="button-row">
+                    <div class="button-row" id="uploadActionButtons" style="display:none; flex-direction:column; gap:8px; align-items:center;">
                         <button type="submit" id="submitButton" class="custom-file-upload">Confirm upload</button>
+                        <button type="button" id="clearPreviewButton" class="custom-file-upload">Cancel</button>
                     </div>
                     <button id="startWebcamButton" class="custom-file-upload" type="button">Take a New Picture</button>
                     <label for="fileInput" class="custom-file-upload" id="chooseFileLabel">Choose a file</label>
