@@ -36,10 +36,9 @@
     ~[wc:admin_navigation_frame_css]
     <div class="box-round">
         <div class="teacher-photo">
-            <div style="text-align:center; font-size:1.2em; font-weight:bold; margin-bottom:10px;">Photo for
+            <div class="photo-title">Photo for
                 ~(first_name) ~(last_name)</div>
-            <div style="text-align:center; margin-bottom:8px;">
-                <span style="font-size:1em; color:#555;">Teacher Number: <strong>~(teachernumber)</strong></span>
+            <div class="photo-teachernumber"><span>Teacher Number: <strong>~(teachernumber)</strong></span>
             </div>
             <!-- Display teacher photo -->
             <table border="0" cellspacing="0" cellpadding="4">
@@ -55,10 +54,9 @@
                 </div>
                 <p><i>Preview of new picture</i></p>
             </div>
-            <div class="photo-options-container" style="text-align: center; margin-top: 20px;">
-                <form id="uploadForm" action="LPS-Staff-Photo.html?frn=~(frn)" method="POST"
-                    enctype="multipart/form-data" style="margin: 0;">
-                    <div class="button-row" id="uploadActionButtons" style="display:none; flex-direction:column; gap:8px; align-items:center;">
+            <div class="photo-options-container">
+                <form id="uploadForm" action="LPS-Staff-Photo.html?frn=~(frn)" method="POST" enctype="multipart/form-data">
+                    <div class="button-row" id="uploadActionButtons">
                         <button type="submit" id="submitButton" class="custom-file-upload">Confirm upload</button>
                         <button type="button" id="clearPreviewButton" class="custom-file-upload">Cancel</button>
                     </div>
@@ -71,19 +69,18 @@
                 </form>
             </div>
             <!-- Webcam video stream -->
-            <div id="webcamContainer" style="display: none;">
+            <div id="webcamContainer">
                 <video id="video" autoplay></video>
-                <canvas id="videoCanvas" width="360" height="432" style="display: none;"></canvas>
+                <canvas id="videoCanvas" width="360" height="432"></canvas>
                 <div>
-                    <button id="flipCameraButton" class="custom-file-upload"
-                        style="display:none; margin-bottom:8px;">Flip Camera</button>
+                    <button id="flipCameraButton" class="custom-file-upload">Flip Camera</button>
                     <button id="captureButton" class="custom-file-upload">Capture Picture</button>
-                    <button id="cancelButton" class="custom-file-upload"
-                        style="background-color: #F03F35;">Cancel</button>
+                    <button id="cancelButton" class="custom-file-upload">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
     ~[wc:admin_footer_frame_css]
 </body>
+
 </html>
