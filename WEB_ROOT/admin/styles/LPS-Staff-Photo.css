@@ -1,208 +1,252 @@
+/* Global Styles */
 body, html {
-            font-family: Arial, sans-serif !important;
-        }
+    font-family: Arial, sans-serif !important;
+}
 
-        .box-round {
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
+/* Box and Layout Styles */
+.box-round {
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
 
-        .teacher-photo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+.teacher-photo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-        #fileInput {
-            display: none;
-        }
+#fileInput {
+    display: none;
+}
 
-        .custom-file-upload,
-        #submitButton,
-        #startWebcamButton {
-            background-color: #0066A5;
-            border: 0 none;
-            border-radius: 4px;
-            color: #FFFFFF;
-            cursor: pointer;
-            padding: .4em 0;
-            margin: 5px 0;
-            font-size: 100%;
-            line-height: 1.2em;
-            width: 220px;
-            display: inline-block;
-            text-align: center;
-            transition: background 0.2s;
-        }
+/* Button Styles */
+.custom-file-upload,
+#submitButton,
+#startWebcamButton {
+    background-color: #0066A5;
+    border: 0 none;
+    border-radius: 4px;
+    color: #FFFFFF;
+    cursor: pointer;
+    padding: .4em 0;
+    margin: 5px 0;
+    font-size: 100%;
+    line-height: 1.2em;
+    width: 220px;
+    display: inline-block;
+    text-align: center;
+    transition: background 0.2s;
+}
 
-        #submitButton:hover,
-        #startWebcamButton:hover,
-        .custom-file-upload:hover {
-            background-color: #005b8a;
-        }
+#submitButton {
+    display: none;
+    background-color: #2ecc40 !important;
+    color: #fff;
+    transition: background 0.2s, transform 0.2s;
+}
 
-        #submitButton {
-            display: none;
-            background-color: #2ecc40 !important;
-            color: #fff;
-            transition: background 0.2s, transform 0.2s;
-        }
+#submitButton:hover {
+    background-color: #27ae38 !important;
+    transform: scale(1.06);
+}
 
-        #submitButton:hover {
-            background-color: #27ae38 !important;
-            transform: scale(1.06);
-        }
+#startWebcamButton {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
 
-        #imagePreview {
-            display: none;
-            margin-top: 10px;
-            text-align: center;
-            width: 220px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+#captureButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 10px;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px #33333322, 0 0 2px #fff;
+    border: 1px solid #005b8a;
+    box-shadow: 0 1px 4px #0001;
+    width: 220px;
+    margin: 0;
+}
 
-        #imagePreview img {
-            max-width: 80%;
-            max-height: 150px;
-            border: 2px solid #0066A5;
-            padding: 5px;
-        }
+#captureButton:hover {
+    background-color: #0056b3;
+}
 
-        .button-row {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-        }
+#cancelButton {
+    display: inline-block;
+    margin-top: 10px;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px #33333322, 0 0 2px #fff;
+    border: 1px solid #005b8a;
+    box-shadow: 0 1px 4px #0001;
+    width: 220px;
+    margin: 0;
+    background-color: #F03F35;
+}
 
-        #rotatePreviewBtn,
-        #clearPreviewButton {
-            margin-left: 0 !important;
-            margin-inline-start: 0 !important;
-        }
+#flipCameraButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #111111;
+    color: white;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px #33333322, 0 0 2px #fff;
+    box-shadow: 0 1px 4px #0001;
+    width: 220px;
+    margin: 0 0 8px 0;
+    display: block;
+    display: none;
+}
 
-        #webcamContainer {
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 90%;
-            max-height: 90%;
-            overflow: auto;
-        }
+#flipCameraButton:hover {
+    background-color: #222;
+}
 
-        #video {
-            width: 360px;
-            height: 432px;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            object-fit: cover;
-        }
+#rotatePreviewBtn,
+#clearPreviewButton {
+    margin-left: 0 !important;
+    margin-inline-start: 0 !important;
+}
 
-        #captureButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+#clearPreviewButton {
+    background-color: #F03F35 !important;
+    color: #fff;
+    transition: background 0.2s, transform 0.2s;
+}
 
-        #captureButton:hover {
-            background-color: #0056b3;
-        }
+#clearPreviewButton:hover {
+    background-color: #c82333 !important;
+    transform: scale(1.06);
+}
 
-        #captureButton,
-        #cancelButton {
-            display: inline-block;
-            margin-top: 10px;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px #33333322, 0 0 2px #fff;
-            border: 1px solid #005b8a;
-            box-shadow: 0 1px 4px #0001;
-            width: 220px;
-            margin: 0;
-        }
+.button-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
 
-        #startWebcamButton {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
+.button-row > button,
+.button-row > label {
+    margin-inline-start: 0 !important;
+}
 
-        #flipCameraButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #111111;
-            color: white;
-            border: 1px solid #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px #33333322, 0 0 2px #fff;
-            box-shadow: 0 1px 4px #0001;
-            width: 220px;
-            margin: 0 0 8px 0;
-            display: block;
-        }
+label {
+    font-weight: normal !important;
+}
 
-        #flipCameraButton:hover {
-            background-color: #222;
-        }
+/* Preview/Image Styles */
+#imagePreview {
+    display: none;
+    margin-top: 10px;
+    text-align: center;
+    width: 220px;
+    margin-left: auto;
+    margin-right: auto;
+}
 
-        #webcamContainer>div {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 10px;
-            gap: 8px;
-        }
+#imagePreview img {
+    max-width: 80%;
+    max-height: 150px;
+    border: 2px solid #0066A5;
+    padding: 5px;
+}
 
-        @media (max-width: 400px) {
-            #video {
-                width: 100%;
-                height: auto;
-            }
+/* Webcam Modal Styles */
+#webcamContainer {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 90%;
+    max-height: 90%;
+    overflow: auto;
+    display: none;
+}
 
-            #captureButton,
-            #cancelButton {
-                width: 100%;
-            }
+#webcamContainer>div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+    gap: 8px;
+}
 
-            #flipCameraButton {
-                width: 100%;
-            }
-        }
+#video {
+    width: 360px;
+    height: 432px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    object-fit: cover;
+}
 
-        
-        .button-row > button,
-        .button-row > label {
-            margin-inline-start: 0 !important;
-        }
+/* Staff Photo Page - Inline Style Replacements */
+.photo-title {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.photo-teachernumber {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 1em;
+    color: #555;
+}
+.photo-options-container {
+    text-align: center;
+    margin-top: 20px;
+}
+#uploadForm {
+    margin: 0;
+}
+#uploadActionButtons {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+#webcamContainer {
+    display: none;
+}
+#videoCanvas {
+    display: none;
+}
+#flipCameraButton {
+    display: none;
+    margin-bottom: 8px;
+}
 
-        label {
-            font-weight: normal !important;
-        }
-
-        #clearPreviewButton {
-            background-color: #F03F35 !important;
-            color: #fff;
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        #clearPreviewButton:hover {
-            background-color: #c82333 !important;
-            transform: scale(1.06);
-        }
+/* Responsive Styles */
+@media (max-width: 400px) {
+    #video {
+        width: 100%;
+        height: auto;
+    }
+    #captureButton,
+    #cancelButton {
+        width: 100%;
+    }
+    #flipCameraButton {
+        width: 100%;
+    }
+}
