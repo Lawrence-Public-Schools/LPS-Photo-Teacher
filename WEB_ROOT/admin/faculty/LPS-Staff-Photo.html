@@ -56,20 +56,18 @@
                 <p><i>Preview of new picture</i></p>
             </div>
             <div class="photo-options-container" style="text-align: center; margin-top: 20px;">
-                <!-- Choose a file -->
                 <form id="uploadForm" action="LPS-Staff-Photo.html?frn=~(frn)" method="POST"
                     enctype="multipart/form-data" style="margin: 0;">
-                    <label for="fileInput" class="custom-file-upload" id="chooseFileLabel">Choose a file</label>
-                    <input type="file" name="filename" accept="image/*" id="fileInput">
                     <div class="button-row">
-                        <input type="hidden" name="ac" value="submitteacherphoto">
-                        <input type="hidden" name="frn" value="~(frn)">
-                        <input type="hidden" name="curtchrid" value="~(curtchrid)">
                         <button type="submit" id="submitButton" class="custom-file-upload">Confirm upload</button>
                     </div>
+                    <button id="startWebcamButton" class="custom-file-upload" type="button">Take a New Picture</button>
+                    <label for="fileInput" class="custom-file-upload" id="chooseFileLabel">Choose a file</label>
+                    <input type="file" name="filename" accept="image/*" id="fileInput">
+                    <input type="hidden" name="ac" value="submitteacherphoto">
+                    <input type="hidden" name="frn" value="~(frn)">
+                    <input type="hidden" name="curtchrid" value="~(curtchrid)">
                 </form>
-                <!-- Take a new picture -->
-                <button id="startWebcamButton" class="custom-file-upload">Take a New Picture</button>
             </div>
             <!-- Webcam video stream -->
             <div id="webcamContainer" style="display: none;">
