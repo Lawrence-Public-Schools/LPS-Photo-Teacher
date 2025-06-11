@@ -46,6 +46,14 @@ body, html {
 
         #submitButton {
             display: none;
+            background-color: #2ecc40 !important;
+            color: #fff;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        #submitButton:hover {
+            background-color: #27ae38 !important;
+            transform: scale(1.06);
         }
 
         #imagePreview {
@@ -186,4 +194,15 @@ body, html {
 
         label {
             font-weight: normal !important;
+        }
+
+        #clearPreviewButton {
+            background-color: #F03F35 !important;
+            color: #fff;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        #clearPreviewButton:hover {
+            background-color: #c82333 !important;
+            transform: scale(1.06);
         }
