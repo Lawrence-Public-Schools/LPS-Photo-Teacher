@@ -45,6 +45,37 @@ let capturedImageData = null;
 let currentFacingMode = 'user';
 let rotation = 0;
 
+// Helper: center-crop and draw video to canvas at 5:6 aspect ratio (aspect = 120/144)
+function drawCroppedVideoToCanvas(video, canvas, context) {
+    const TARGET_ASPECT = 120 / 144;
+    const vidW = video.videoWidth;
+    const vidH = video.videoHeight;
+    const vidAspect = vidW / vidH;
+    let sx, sy, sw, sh;
+    if (vidAspect > TARGET_ASPECT) {
+        // Video is wider than target: crop sides
+        sh = vidH;
+        sw = sh * TARGET_ASPECT;
+        sx = (vidW - sw) / 2;
+        sy = 0;
+    } else {
+        // Video is taller than target: crop top/bottom
+        sw = vidW;
+        sh = sw / TARGET_ASPECT;
+        sx = 0;
+        sy = (vidH - sh) / 2;
+    }
+    context.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+}
+
+// Set video/canvas size and aspect ratio for preview
+function setVideoAndCanvasSize() {
+    video.width = TARGET_WIDTH;
+    video.height = TARGET_HEIGHT;
+    canvas.width = TARGET_WIDTH;
+    canvas.height = TARGET_HEIGHT;
+}
+
 // Show flip camera button on mobile
 if (isMobileDevice()) {
     flipCameraButton.style.display = 'block';
@@ -75,38 +106,41 @@ fileInput.addEventListener('change', function () {
 
 // Webcam: open popup and start camera
 startWebcamButton.addEventListener('click', () => {
-    navigator.mediaDevices.getUserMedia({ video: true }) // Request webcam access
+    navigator.mediaDevices.getUserMedia({ video: true })
         .then((mediaStream) => {
-            stream = mediaStream; // Start the media stream
-            currentFacingMode = 'user'; // Default to front camera
-            if (isSafariOrIOS()) { // Special handling for Safari/iOS
+            stream = mediaStream;
+            currentFacingMode = 'user';
+            video.onloadedmetadata = function () {
+                // No need to set video/canvas size here; CSS controls display size
+            };
+            if (isSafariOrIOS()) {
                 const context = canvas.getContext('2d');
-                canvas.style.display = 'block'; // Show canvas if Safari/iOS and hide video element
+                canvas.style.display = 'block';
                 video.style.display = 'none';
                 const updateCanvas = () => {
                     if (stream) {
+                        context.clearRect(0, 0, canvas.width, canvas.height);
                         if (currentFacingMode === 'user' && isMobileDevice()) {
                             context.save();
                             context.translate(canvas.width, 0);
-                            context.scale(-1, 1); // Mirror for front camera
-                            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            context.scale(-1, 1);
+                            drawCroppedVideoToCanvas(video, canvas, context);
                             context.restore();
                         } else {
-                            context.clearRect(0, 0, canvas.width, canvas.height);
-                            context.drawImage(video, 0, 0, canvas.width, canvas.height); // Draw video frame if not mobile or not front camera
+                            drawCroppedVideoToCanvas(video, canvas, context);
                         }
-                        requestAnimationFrame(updateCanvas); // Continuously update canvas from the video stream
+                        requestAnimationFrame(updateCanvas);
                     }
                 };
-                video.srcObject = stream; // Set video source, start video playback, and start updating canvas
+                video.srcObject = stream;
                 video.play();
                 updateCanvas();
             } else {
-                video.srcObject = stream; // Set video source, show video element, hide canvas
+                video.srcObject = stream;
                 video.style.display = 'block';
                 canvas.style.display = 'none';
             }
-            webcamContainer.style.display = 'block'; // Show webcam popup, hide start button, hide image preview
+            webcamContainer.style.display = 'block';
             startWebcamButton.style.display = 'none';
             imagePreview.style.display = 'none';
         })
@@ -115,28 +149,30 @@ startWebcamButton.addEventListener('click', () => {
 
 // Webcam: capture image
 captureButton.addEventListener('click', () => {
-    const context = canvas.getContext('2d'); // Get canvas drawing context
+    // Set canvas size to match display size (CSS: 360x432)
     canvas.width = 360;
     canvas.height = 432;
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
     if (currentFacingMode === 'user' && isMobileDevice()) {
         context.save();
         context.translate(canvas.width, 0);
-        context.scale(-1, 1); // Mirror for front camera on mobile
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        context.scale(-1, 1); // Flip horizontally for user-facing camera
+        drawCroppedVideoToCanvas(video, canvas, context);
         context.restore();
     } else {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height); // Draw video frame to canvas if not mobile or not front camera
+        drawCroppedVideoToCanvas(video, canvas, context); // Draw video to canvas
     }
-    capturedImageData = canvas.toDataURL('image/jpeg'); // Save captured image as data URL
+    capturedImageData = canvas.toDataURL('image/jpeg'); // Convert canvas to base64 data URL
     if (stream) {
-        stream.getTracks().forEach((track) => track.stop()); // Stop webcam stream
+        stream.getTracks().forEach((track) => track.stop()); // Stop all webcam tracks to release camera
     }
-    previewImg.src = capturedImageData; // Show captured image in preview
+    previewImg.src = capturedImageData; // Set preview image source to captured data
     webcamContainer.style.display = 'none';
     startWebcamButton.style.display = 'block';
     uploadActionButtons.style.display = 'flex';
     submitButton.style.display = 'inline-block';
-    chooseFileLabel.style.display = 'inline-block'; // Allow user to pick a different file after taking a picture
+    chooseFileLabel.style.display = 'inline-block'; // Show the "Choose File" label
     imagePreview.style.display = 'block';
 });
 
@@ -153,42 +189,45 @@ cancelButton.addEventListener('click', () => { // When the cancel button is clic
 if (flipCameraButton) {
     flipCameraButton.addEventListener('click', () => {
         if (stream) {
-            stream.getTracks().forEach((track) => track.stop()); // Stop current webcam stream
-        }
-        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user'; // Toggle camera facing mode
-        const facingModeConstraint = { video: { facingMode: { ideal: currentFacingMode } } }; // Set facing mode constraint
-        navigator.mediaDevices.getUserMedia(facingModeConstraint)
-            .then((mediaStream) => {
-                stream = mediaStream; // Start new media stream with selected camera
-                if (isSafariOrIOS()) { // Special handling for Safari/iOS
-                    const context = canvas.getContext('2d');
-                    canvas.style.display = 'block'; // Show canvas for Safari/iOS
-                    video.style.display = 'none'; // Hide video element
-                    const updateCanvas = () => {
-                        if (stream) {
-                            if (currentFacingMode === 'user' && isMobileDevice()) {
-                                context.save();
-                                context.translate(canvas.width, 0);
-                                context.scale(-1, 1); // Mirror for front camera
-                                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                context.restore();
-                            } else {
-                                context.clearRect(0, 0, canvas.width, canvas.height);
-                                context.drawImage(video, 0, 0, canvas.width, canvas.height); // Draw video frame if not mirrored
-                            }
-                            requestAnimationFrame(updateCanvas); // Continuously update canvas
-                        }
+            stream.getTracks().forEach((track) => track.stop()); // Stop all webcam tracks to release camera
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user'; // Toggle facing mode
+            const facingModeConstraint = { video: { facingMode: { ideal: currentFacingMode } } }; // Set facing mode constraint
+            navigator.mediaDevices.getUserMedia(facingModeConstraint)
+                .then((mediaStream) => {
+                    stream = mediaStream;
+                    video.onloadedmetadata = function () {
+                        // No need to set video/canvas size here; CSS controls display size
                     };
-                    video.srcObject = stream; // Set video source to new stream, start video playback, and start updating canvas
-                    video.play();
-                    updateCanvas();
-                } else {
-                    video.srcObject = stream; // Set video source to new stream, show video element, hide canvas
-                    video.style.display = 'block';
-                    canvas.style.display = 'none';
-                }
-            })
-            .catch((error) => console.error('Error flipping camera:', error)); // Log error if camera flip fails
+                    if (isSafariOrIOS()) { // If Safari or iOS, use canvas for preview
+                        const context = canvas.getContext('2d');
+                        canvas.style.display = 'block';
+                        video.style.display = 'none';
+                        const updateCanvas = () => {
+                            if (stream) {
+                                context.clearRect(0, 0, canvas.width, canvas.height);
+                                if (currentFacingMode === 'user' && isMobileDevice()) {
+                                    context.save();
+                                    context.translate(canvas.width, 0);
+                                    context.scale(-1, 1); // Flip horizontally for user-facing camera
+                                    drawCroppedVideoToCanvas(video, canvas, context);
+                                    context.restore();
+                                } else {
+                                    drawCroppedVideoToCanvas(video, canvas, context);
+                                }
+                                requestAnimationFrame(updateCanvas);
+                            }
+                        };
+                        video.srcObject = stream; // Set video source to the new stream
+                        video.play();
+                        updateCanvas();
+                    } else {
+                        video.srcObject = stream; // Set video source to the new stream
+                        video.style.display = 'block';
+                        canvas.style.display = 'none';
+                    }
+                })
+                .catch((error) => console.error('Error flipping camera:', error));
+        }
     });
 }
 
