@@ -10,7 +10,7 @@ function isMobileDevice() {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 } // Returns true if mobile device
 
-// Utility: Converts a base64 dataURL to Blob
+// Utility: Converts a base64 dataURL to Blobby
 function dataURLToBlob(dataURL) {
     const parts = dataURL.split(','); // Split the dataURL into header and data parts
     const mime = parts[0].match(/:(.*?);/)[1]; // Extract the MIME type from the header
@@ -208,7 +208,46 @@ uploadForm.addEventListener('submit', function (event) { // When the form is sub
     // Get real values from hidden inputs
     const frn = document.querySelector('input[name="frn"]').value;
     const curtchrid = document.querySelector('input[name="curtchrid"]').value;
-    if (fileInput.files && fileInput.files.length > 0) { // If a file is selected
+    // Always upload the most recently previewed image (file or webcam)
+    if (capturedImageData) { // If a webcam photo was captured and is in preview
+        const img = new window.Image(); // Create an image element
+        img.onload = function () { // When image is loaded
+            let canvas = document.createElement('canvas'); // Create a canvas for rotation
+            let ctx = canvas.getContext('2d'); // Get canvas context
+            if (rotation % 180 === 0) { // If rotation is 0 or 180
+                canvas.width = img.width; // Set canvas width to image width
+                canvas.height = img.height; // Set canvas height to image height
+            } else { // If rotation is 90 or 270
+                canvas.width = img.height; // Swap width and height
+                canvas.height = img.width;
+            }
+            ctx.save(); // Save context state
+            ctx.translate(canvas.width / 2, canvas.height / 2); // Move origin to center
+            ctx.rotate((rotation * Math.PI) / 180); // Rotate canvas by current rotation
+            ctx.drawImage(img, -img.width / 2, -img.height / 2); // Draw image centered
+            ctx.restore(); // Restore context state
+            canvas.toBlob(function (blob) { // Convert canvas to Blob
+                const formData = new FormData(); // Create FormData for upload
+                formData.append('ac', 'submitteacherphoto');
+                formData.append('frn', frn);
+                formData.append('curtchrid', curtchrid);
+                formData.append('filename', blob, 'captured-image.jpg');
+                fetch('LPS-Staff-Photo.html?frn=' + encodeURIComponent(frn), { // Send POST request to upload
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then((response) => {
+                        if (response.ok) { // If upload successful
+                            location.reload(); // Reload page to show new photo
+                        } else {
+                            alert('Failed to upload the picture.'); // Show error if failed
+                        }
+                    })
+                    .catch((error) => console.error('Error uploading picture (captured):', error)); // Log error
+            }, 'image/jpeg'); // Use jpeg format
+        };
+        img.src = capturedImageData; // Set image source to captured data
+    } else if (fileInput.files && fileInput.files.length > 0) { // If a file is selected and no webcam photo is in preview
         const file = fileInput.files[0]; // Get the selected file
         const reader = new FileReader(); // Create a FileReader to read the file
         reader.onload = function (e) { // When file is loaded
@@ -251,43 +290,5 @@ uploadForm.addEventListener('submit', function (event) { // When the form is sub
             img.src = e.target.result; // Set image source to file data
         };
         reader.readAsDataURL(file); // Read file as data URL
-    } else if (capturedImageData) { // If a webcam photo was captured
-        const img = new window.Image(); // Create an image element
-        img.onload = function () { // When image is loaded
-            let canvas = document.createElement('canvas'); // Create a canvas for rotation
-            let ctx = canvas.getContext('2d'); // Get canvas context
-            if (rotation % 180 === 0) { // If rotation is 0 or 180
-                canvas.width = img.width; // Set canvas width to image width
-                canvas.height = img.height; // Set canvas height to image height
-            } else { // If rotation is 90 or 270
-                canvas.width = img.height; // Swap width and height
-                canvas.height = img.width;
-            }
-            ctx.save(); // Save context state
-            ctx.translate(canvas.width / 2, canvas.height / 2); // Move origin to center
-            ctx.rotate((rotation * Math.PI) / 180); // Rotate canvas by current rotation
-            ctx.drawImage(img, -img.width / 2, -img.height / 2); // Draw image centered
-            ctx.restore(); // Restore context state
-            canvas.toBlob(function (blob) { // Convert canvas to Blob
-                const formData = new FormData(); // Create FormData for upload
-                formData.append('ac', 'submitteacherphoto');
-                formData.append('frn', frn);
-                formData.append('curtchrid', curtchrid);
-                formData.append('filename', blob, 'captured-image.jpg');
-                fetch('LPS-Staff-Photo.html?frn=' + encodeURIComponent(frn), { // Send POST request to upload
-                    method: 'POST',
-                    body: formData,
-                })
-                    .then((response) => {
-                        if (response.ok) { // If upload successful
-                            location.reload(); // Reload page to show new photo
-                        } else {
-                            alert('Failed to upload the picture.'); // Show error if failed
-                        }
-                    })
-                    .catch((error) => console.error('Error uploading picture (captured):', error)); // Log error
-            }, 'image/jpeg'); // Use jpeg format
-        };
-        img.src = capturedImageData; // Set image source to captured data
     }
 });
