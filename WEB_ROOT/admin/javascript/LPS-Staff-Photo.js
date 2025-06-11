@@ -36,6 +36,8 @@ const imagePreview = document.getElementById('imagePreview');
 const cancelButton = document.getElementById('cancelButton');
 const flipCameraButton = document.getElementById('flipCameraButton');
 const rotatePreviewBtn = document.getElementById('rotatePreviewBtn');
+const clearPreviewButton = document.getElementById('clearPreviewButton');
+const uploadActionButtons = document.getElementById('uploadActionButtons');
 
 // State variables
 let stream;
@@ -51,8 +53,8 @@ if (isMobileDevice()) {
 // File input: preview and show confirm button
 fileInput.addEventListener('change', function () {
     if (this.files.length > 0) {
-        submitButton.style.display = 'inline-block'; // Show the confirm upload button
-        // Do NOT hide the choose file label, allow user to pick a different file
+        uploadActionButtons.style.display = 'flex';
+        submitButton.style.display = 'inline-block';
         chooseFileLabel.style.display = 'inline-block';
         imagePreview.style.display = 'block';
         const reader = new FileReader(); // Create a FileReader to read the file
@@ -62,6 +64,7 @@ fileInput.addEventListener('change', function () {
         }
         reader.readAsDataURL(this.files[0]); // Read the file as a data URL
     } else { // If no file is selected
+        uploadActionButtons.style.display = 'none';
         submitButton.style.display = 'none'; // Hide the confirm upload button
         chooseFileLabel.style.display = 'inline-block';
         imagePreview.style.display = 'none';
@@ -131,6 +134,7 @@ captureButton.addEventListener('click', () => {
     previewImg.src = capturedImageData; // Show captured image in preview
     webcamContainer.style.display = 'none';
     startWebcamButton.style.display = 'block';
+    uploadActionButtons.style.display = 'flex';
     submitButton.style.display = 'inline-block';
     chooseFileLabel.style.display = 'inline-block'; // Allow user to pick a different file after taking a picture
     imagePreview.style.display = 'block';
@@ -295,3 +299,18 @@ uploadForm.addEventListener('submit', function (event) { // When the form is sub
         reader.readAsDataURL(file); // Read file as data URL
     }
 });
+
+// Clear preview: reset all states and hide UI
+if (clearPreviewButton) {
+    clearPreviewButton.addEventListener('click', function () {
+        previewImg.src = '#';
+        imagePreview.style.display = 'none';
+        uploadActionButtons.style.display = 'none';
+        submitButton.style.display = 'none';
+        chooseFileLabel.style.display = 'inline-block';
+        fileInput.value = '';
+        capturedImageData = null;
+        rotation = 0;
+        if (previewImg) previewImg.style.transform = 'rotate(0deg)';
+    });
+}
