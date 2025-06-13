@@ -365,3 +365,142 @@ if (clearPreviewButton) {
         if (previewImg) previewImg.style.transform = 'rotate(0deg)';
     });
 }
+
+// Working on crop preview functionality
+// --- Crop Preview State ---
+let crop = {
+    scale: 1,
+    minScale: 1,
+    maxScale: 3,
+    offsetX: 0,
+    offsetY: 0,
+    dragging: false,
+    dragStartX: 0,
+    dragStartY: 0,
+    imgStartX: 0,
+    imgStartY: 0,
+    imgNaturalWidth: 0,
+    imgNaturalHeight: 0,
+    aspect: 360 / 432
+};
+
+const cropArea = document.querySelector('.crop-area');
+const cropZoomSlider = document.getElementById('cropZoomSlider');
+
+// --- Crop Preview Logic ---
+function updateCropPreview() {
+    if (!previewImg.src || previewImg.src === '#') return;
+    const img = previewImg;
+    const areaW = 360, areaH = 432;
+    // Calculate scaled image size
+    const scale = crop.scale;
+    const imgW = crop.imgNaturalWidth * scale;
+    const imgH = crop.imgNaturalHeight * scale;
+    // Centered position
+    const x = crop.offsetX;
+    const y = crop.offsetY;
+    img.style.width = imgW + 'px';
+    img.style.height = imgH + 'px';
+    img.style.left = x + 'px';
+    img.style.top = y + 'px';
+    img.style.transform = `rotate(${rotation}deg)`;
+}
+
+function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+
+// When image loads, fit to crop area and set min zoom
+previewImg.onload = function () {
+    crop.imgNaturalWidth = previewImg.naturalWidth;
+    crop.imgNaturalHeight = previewImg.naturalHeight;
+    // Fit image to cover crop area
+    const scaleX = 360 / crop.imgNaturalWidth;
+    const scaleY = 432 / crop.imgNaturalHeight;
+    crop.minScale = Math.max(scaleX, scaleY);
+    crop.scale = crop.minScale;
+    crop.maxScale = Math.max(3, crop.minScale);
+    crop.offsetX = (360 - crop.imgNaturalWidth * crop.scale) / 2;
+    crop.offsetY = (432 - crop.imgNaturalHeight * crop.scale) / 2;
+    cropZoomSlider.min = crop.minScale;
+    cropZoomSlider.max = crop.maxScale;
+    cropZoomSlider.value = crop.scale;
+    updateCropPreview();
+};
+
+// Zoom slider
+cropZoomSlider.addEventListener('input', function () {
+    const prevScale = crop.scale;
+    crop.scale = parseFloat(this.value);
+    // Adjust offset to zoom to center
+    const centerX = 360 / 2 - crop.offsetX;
+    const centerY = 432 / 2 - crop.offsetY;
+    crop.offsetX -= (crop.scale - prevScale) * (centerX / prevScale);
+    crop.offsetY -= (crop.scale - prevScale) * (centerY / prevScale);
+    updateCropPreview();
+});
+
+// Drag logic
+cropArea.addEventListener('pointerdown', function (e) {
+    crop.dragging = true;
+    crop.dragStartX = e.clientX;
+    crop.dragStartY = e.clientY;
+    crop.imgStartX = crop.offsetX;
+    crop.imgStartY = crop.offsetY;
+    cropArea.setPointerCapture(e.pointerId);
+});
+cropArea.addEventListener('pointermove', function (e) {
+    if (!crop.dragging) return;
+    const dx = e.clientX - crop.dragStartX;
+    const dy = e.clientY - crop.dragStartY;
+    crop.offsetX = crop.imgStartX + dx;
+    crop.offsetY = crop.imgStartY + dy;
+    // Clamp so image always covers crop area
+    const imgW = crop.imgNaturalWidth * crop.scale;
+    const imgH = crop.imgNaturalHeight * crop.scale;
+    crop.offsetX = clamp(crop.offsetX, 360 - imgW, 0);
+    crop.offsetY = clamp(crop.offsetY, 432 - imgH, 0);
+    updateCropPreview();
+});
+cropArea.addEventListener('pointerup', function (e) {
+    crop.dragging = false;
+    cropArea.releasePointerCapture(e.pointerId);
+});
+cropArea.addEventListener('pointerleave', function (e) {
+    crop.dragging = false;
+});
+
+// When file is chosen, reset crop
+fileInput.addEventListener('change', function () {
+    crop.offsetX = 0;
+    crop.offsetY = 0;
+    crop.scale = 1;
+    updateCropPreview();
+});
+
+// When rotating, update preview
+if (rotatePreviewBtn && previewImg) {
+    rotatePreviewBtn.addEventListener('click', function () {
+        updateCropPreview();
+    });
+}
+
+// Crop and upload final image
+function getCroppedImageBlob(callback) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 360;
+    canvas.height = 432;
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+    ctx.drawImage(
+        previewImg,
+        -crop.offsetX / crop.scale,
+        -crop.offsetY / crop.scale,
+        360 / crop.scale,
+        432 / crop.scale,
+        0, 0, 360, 432
+    );
+    ctx.restore();
+    canvas.toBlob(callback, 'image/jpeg');
+}

@@ -47,8 +47,12 @@
                 </tr>
             </table>
             <!-- Image preview section -->
-            <div id="imagePreview">
-                <img id="previewImg" src="#" alt="Image Preview">
+            <div id="imagePreview" class="crop-preview-container">
+                <div class="crop-area">
+                    <img id="previewImg" src="#" alt="Image Preview" draggable="false">
+                    <div class="crop-grid"></div>
+                </div>
+                <input type="range" id="cropZoomSlider" min="1" max="3" step="0.01" value="1">
                 <div class="button-row">
                     <button type="button" id="rotatePreviewBtn" class="custom-file-upload">Rotate</button>
                 </div>
